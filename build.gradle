@@ -1,0 +1,28 @@
+group 'acmi.l2.clientmod'
+version '1.0'
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://raw.githubusercontent.com/acmi/L2io/mvn-repo" }
+    maven { url "https://raw.githubusercontent.com/acmi/Serializer/mvn-repo" }
+    maven { url "https://raw.githubusercontent.com/acmi/L2crypt/mvn-repo" }
+    maven { url "https://raw.githubusercontent.com/acmi/L2unreal/mvn-repo" }
+    maven { url "https://raw.githubusercontent.com/acmi/AutoCompleteComboBox/mvn-repo" }
+}
+
+dependencies {
+    compile group: 'acmi.l2.clientmod', name: 'l2unreal', version: '1.0'
+    compile group: 'acmi.util', name: 'autocomletecombobox', version: '1.0'
+}
