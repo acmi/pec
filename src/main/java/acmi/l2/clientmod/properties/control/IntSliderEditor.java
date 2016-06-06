@@ -23,17 +23,12 @@ package acmi.l2.clientmod.properties.control;
 
 import acmi.l2.clientmod.properties.control.skin.IntSliderEditorSkin;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.IntegerPropertyBase;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
 public class IntSliderEditor extends Control {
-    private IntegerProperty min = new SimpleIntegerProperty();
-    private IntegerProperty max = new SimpleIntegerProperty();
-    private IntegerProperty value = new SimpleIntegerProperty();
-
     public IntSliderEditor() {
-        this(0, 255, 0);
     }
 
     public IntSliderEditor(int min, int max, int value) {
@@ -42,44 +37,123 @@ public class IntSliderEditor extends Control {
         setValue(value);
     }
 
+    private IntegerProperty min;
+
     public int getMin() {
-        return min.get();
+        return min == null ? 0 : min.get();
     }
 
     public IntegerProperty minProperty() {
+        if (min == null) {
+            min = new IntegerPropertyBase(0) {
+                @Override
+                protected void invalidated() {
+                    if (get() > getMax()) {
+                        setMax(get());
+                    }
+                    adjustValues();
+                }
+
+                @Override
+                public Object getBean() {
+                    return IntSliderEditor.this;
+                }
+
+                @Override
+                public String getName() {
+                    return "min";
+                }
+            };
+        }
         return min;
     }
 
     public void setMin(int min) {
-        this.min.set(min);
+        minProperty().set(min);
     }
 
+
+    private IntegerProperty max;
+
     public int getMax() {
-        return max.get();
+        return max == null ? 255 : max.get();
     }
 
     public IntegerProperty maxProperty() {
+        if (max == null) {
+            max = new IntegerPropertyBase(255) {
+                @Override
+                protected void invalidated() {
+                    if (get() < getMin()) {
+                        setMin(get());
+                    }
+                    adjustValues();
+                }
+
+                @Override
+                public Object getBean() {
+                    return IntSliderEditor.this;
+                }
+
+                @Override
+                public String getName() {
+                    return "max";
+                }
+            };
+        }
         return max;
     }
 
     public void setMax(int max) {
-        this.max.set(max);
+        maxProperty().set(max);
     }
 
+
+    private IntegerProperty value;
+
     public int getValue() {
-        return value.get();
+        return value == null ? 0 : value.get();
     }
 
     public IntegerProperty valueProperty() {
+        if (value == null) {
+            value = new IntegerPropertyBase(0) {
+                @Override
+                protected void invalidated() {
+                    adjustValues();
+                }
+
+                @Override
+                public Object getBean() {
+                    return IntSliderEditor.this;
+                }
+
+                @Override
+                public String getName() {
+                    return "value";
+                }
+            };
+        }
         return value;
     }
 
     public void setValue(int value) {
-        this.value.set(value);
+        if (!valueProperty().isBound()) valueProperty().set(value);
     }
 
     @Override
     protected Skin<?> createDefaultSkin() {
         return new IntSliderEditorSkin(this);
+    }
+
+    private void adjustValues() {
+        if ((getValue() < getMin() || getValue() > getMax()))
+            setValue(clamp(getMin(), getValue(), getMax()));
+    }
+
+    private static int clamp(int min, int value, int max) {
+        if (value < min) return min;
+        if (value > max) return max;
+        return value;
     }
 }

@@ -41,10 +41,7 @@ public class IntSliderEditorSkin implements Skin<IntSliderEditor> {
 
         @Override
         public Number fromString(String string) {
-            int val = Integer.parseInt(string);
-            val = Math.min(val, control.getMax());
-            val = Math.max(val, control.getMin());
-            return val;
+           return Integer.parseInt(string);
         }
     };
 

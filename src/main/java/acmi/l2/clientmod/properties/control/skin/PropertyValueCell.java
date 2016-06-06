@@ -47,11 +47,14 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static acmi.l2.clientmod.properties.control.skin.PropertiesEditorDefaultSkin.fillArrayTree;
 
 class PropertyValueCell extends TreeTableCell<ObjectProperty<Object>, Object> {
+    private static final Logger log = Logger.getLogger(PropertyValueCell.class.getName());
+
     private final PropertiesEditor properties;
 
     {
@@ -180,6 +183,14 @@ class PropertyValueCell extends TreeTableCell<ObjectProperty<Object>, Object> {
             entries.addAll(getPropertiesEditor().getUnrealPackage().getImportTable().parallelStream().filter(filter).collect(Collectors.toList()));
             entries.addAll(getPropertiesEditor().getUnrealPackage().getExportTable().parallelStream().filter(filter).collect(Collectors.toList()));
             Collections.sort(entries, (e1, e2) -> e1.getObjectFullName().compareToIgnoreCase(e2.getObjectFullName()));
+            if (entries.isEmpty()) {
+                int val = (Integer) property.get();
+                if (val != 0) {
+                    log.warning(() -> "No entries found for " + template);
+
+                    entries.add(getPropertiesEditor().getUnrealPackage().objectReference(val));
+                }
+            }
             entries.add(0, new UnrealPackage.Entry(null, 0, 0, 0) {
                 @Override
                 public String getObjectInnerFullName() {
@@ -220,6 +231,14 @@ class PropertyValueCell extends TreeTableCell<ObjectProperty<Object>, Object> {
             entries.addAll(getPropertiesEditor().getUnrealPackage().getImportTable().parallelStream().filter(filter).collect(Collectors.toList()));
             entries.addAll(getPropertiesEditor().getUnrealPackage().getExportTable().parallelStream().filter(filter).collect(Collectors.toList()));
             Collections.sort(entries, (e1, e2) -> e1.getObjectFullName().compareToIgnoreCase(e2.getObjectFullName()));
+            if (entries.isEmpty()) {
+                int val = (Integer) property.get();
+                if (val != 0) {
+                    log.warning(() -> "No entries found for " + template);
+
+                    entries.add(getPropertiesEditor().getUnrealPackage().objectReference(val));
+                }
+            }
             entries.add(0, new UnrealPackage.Entry(null, 0, 0, 0) {
                 @Override
                 public String getObjectInnerFullName() {
@@ -318,7 +337,7 @@ class PropertyValueCell extends TreeTableCell<ObjectProperty<Object>, Object> {
                         .filter(ti -> ti.getValue().getName().equalsIgnoreCase(name))
                         .findAny()
                         .map(TreeItem::getValue)
-                        .get();
+                        .orElseThrow(() -> new IllegalThreadStateException("Color component not found: " + name));
                 ObjectProperty<Object> a = f.apply("A");
                 ObjectProperty<Object> r = f.apply("R");
                 ObjectProperty<Object> g = f.apply("G");

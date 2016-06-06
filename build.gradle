@@ -1,5 +1,5 @@
 group 'acmi.l2.clientmod'
-version '1.0'
+version '1.1'
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -23,6 +23,6 @@ repositories {
 }
 
 dependencies {
-    compile group: 'acmi.l2.clientmod', name: 'l2unreal', version: '1.0'
+    compile group: 'acmi.l2.clientmod', name: 'l2unreal', version: '1.1'
     compile group: 'acmi.util', name: 'autocomletecombobox', version: '1.0'
 }

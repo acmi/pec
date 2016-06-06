@@ -190,14 +190,14 @@ public class PropertiesEditor extends Control {
                 .filter(p -> !(struct instanceof Class) || (!hideCategories || !Arrays.asList(((Class) struct).hideCategories).contains(p.category)));
     }
 
-    public static void removeDefaults(List<L2Property> properties, UnrealSerializerFactory serializer, UnrealPackage unrealPackage) {
+    public static void removeDefaults(List<L2Property> properties, String structName, UnrealSerializerFactory serializer, UnrealPackage unrealPackage) {
         if (properties == null)
             return;
 
         for (Iterator<L2Property> it = properties.iterator(); it.hasNext(); ) {
             L2Property property = it.next();
 
-            java.lang.Object def = PropertiesEditor.defaultValue(property.getTemplate(), serializer, unrealPackage);
+            java.lang.Object def = PropertiesEditor.defaultValue(property.getTemplate(), structName, serializer, unrealPackage);
 
             boolean del = true;
             for (int i = 0; i < property.getSize(); i++) {
@@ -205,7 +205,7 @@ public class PropertiesEditor extends Control {
                 if (!def.equals(obj)) {
                     del = false;
                     if (property.getTemplate() instanceof StructProperty)
-                        removeDefaults((List<L2Property>) obj, serializer, unrealPackage);
+                        removeDefaults((List<L2Property>) obj, ((StructProperty) property.getTemplate()).struct.getFullName(), serializer, unrealPackage);
                 } else {
                     if (property.getTemplate() instanceof StructProperty)
                         property.putAt(i, null);
