@@ -202,17 +202,17 @@ public class PropertiesEditor extends Control {
             boolean del = true;
             for (int i = 0; i < property.getSize(); i++) {
                 java.lang.Object obj = property.getAt(i);
-                if (!def.equals(obj)) {
-                    del = false;
-                    if (property.getTemplate() instanceof StructProperty) {
-                        List<L2Property> struct = (List<L2Property>) obj;
-                        removeDefaults(struct, ((StructProperty) property.getTemplate()).struct.getFullName(), serializer, unrealPackage);
-                        if (struct.isEmpty())
-                            property.putAt(i, null);
-                    }
-                } else {
+
+                if (property.getTemplate() instanceof StructProperty) {
+                    List<L2Property> struct = (List<L2Property>) obj;
+                    removeDefaults(struct, ((StructProperty) property.getTemplate()).struct.getFullName(), serializer, unrealPackage);
+                }
+
+                if (def.equals(obj)) {
                     if (property.getTemplate() instanceof StructProperty)
                         property.putAt(i, null);
+                } else {
+                    del = false;
                 }
             }
             if (del) {
