@@ -28,6 +28,7 @@ import acmi.l2.clientmod.unreal.UnrealSerializerFactory;
 import acmi.l2.clientmod.unreal.core.*;
 import acmi.l2.clientmod.unreal.core.Enum;
 import acmi.l2.clientmod.unreal.properties.L2Property;
+import acmi.l2.clientmod.unreal.properties.PropertiesUtil;
 import acmi.util.AutoCompleteComboBox;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
@@ -105,7 +106,7 @@ class PropertyValueCell extends TreeTableCell<ObjectProperty<Object>, Object> {
                 Button insert = new Button("Insert");
                 insert.setMinWidth(Region.USE_PREF_SIZE);
                 insert.setOnAction(event -> {
-                    Object value = PropertiesEditor.defaultValue(parentProperty.inner, null, getPropertiesEditor().getSerializer(), getPropertiesEditor().getUnrealPackage());
+                    Object value = PropertiesUtil.defaultValue(parentProperty.inner, null, getPropertiesEditor().getSerializer(), getPropertiesEditor().getUnrealPackage());
                     list.add(index, value);
                     parent.getChildren().clear();
                     parent.getChildren().addAll(fillArrayTree(null, parentProperty, parentProperty.entry.getObjectName().getName(), list, getPropertiesEditor().getUnrealPackage(), getPropertiesEditor().getSerializer(), getPropertiesEditor().getEditableOnly(), getPropertiesEditor().getHideCategories()));
@@ -308,7 +309,7 @@ class PropertyValueCell extends TreeTableCell<ObjectProperty<Object>, Object> {
             Button add = new Button("Add");
             add.setMinWidth(Region.USE_PREF_SIZE);
             add.setOnAction(event -> {
-                Object value = PropertiesEditor.defaultValue(((ArrayProperty) template).inner, null, getPropertiesEditor().getSerializer(), getPropertiesEditor().getUnrealPackage());
+                Object value = PropertiesUtil.defaultValue(((ArrayProperty) template).inner, null, getPropertiesEditor().getSerializer(), getPropertiesEditor().getUnrealPackage());
                 list.add(value);
                 item.getChildren().clear();
                 item.getChildren().addAll(fillArrayTree(null, (ArrayProperty) template, template.entry.getObjectName().getName(), list, getPropertiesEditor().getUnrealPackage(), getPropertiesEditor().getSerializer(), getPropertiesEditor().getEditableOnly(), getPropertiesEditor().getHideCategories()));

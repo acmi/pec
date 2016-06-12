@@ -28,6 +28,7 @@ import acmi.l2.clientmod.unreal.core.ArrayProperty;
 import acmi.l2.clientmod.unreal.core.Property;
 import acmi.l2.clientmod.unreal.core.StructProperty;
 import acmi.l2.clientmod.unreal.properties.L2Property;
+import acmi.l2.clientmod.unreal.properties.PropertiesUtil;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -52,7 +53,7 @@ public class PropertiesEditorDefaultSkin extends TreeBasedPropertiesEditorSkin {
     }
 
     static List<TreeItem<ObjectProperty<Object>>> buildTree(List<L2Property> object, String structName, UnrealPackage up, UnrealSerializerFactory serializer, boolean editableOnly, boolean hideCategories) {
-        Set<Property> properties = PropertiesEditor.getProperties(structName, serializer, editableOnly, hideCategories)
+        Set<Property> properties = PropertiesUtil.getProperties(structName, serializer, editableOnly, hideCategories)
                 .collect(Collectors.toSet());
 
         properties.addAll(object
@@ -96,7 +97,7 @@ public class PropertiesEditorDefaultSkin extends TreeBasedPropertiesEditorSkin {
                 .filter(l2p -> l2p.getTemplate() == property)
                 .findAny()
                 .orElseGet(() -> {
-                    L2Property l2p = PropertiesEditor.create(property, structName, serializer, up);
+                    L2Property l2p = PropertiesUtil.create(property, structName, serializer, up);
                     object.add(l2p);
                     return l2p;
                 });
@@ -136,7 +137,7 @@ public class PropertiesEditorDefaultSkin extends TreeBasedPropertiesEditorSkin {
         if (property instanceof StructProperty) {
             List<L2Property> struct = (List<L2Property>) object;
             if (struct == null)
-                struct = (List<L2Property>) PropertiesEditor.defaultValue(property, structName, serializer, up);
+                struct = (List<L2Property>) PropertiesUtil.defaultValue(property, structName, serializer, up);
             TreeItem<ObjectProperty<Object>> item = new TreeItem<>(new SimpleObjectProperty<>(property, name, struct));
             item.getChildren().addAll(buildTree(struct, ((StructProperty) property).struct.entry.getObjectFullName(), up, serializer, editableOnly, hideCategories));
             return item;
