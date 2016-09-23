@@ -24,21 +24,12 @@ package acmi.l2.clientmod.properties.control;
 import acmi.l2.clientmod.io.UnrealPackage;
 import acmi.l2.clientmod.properties.control.skin.PropertiesEditorDefaultSkin;
 import acmi.l2.clientmod.unreal.UnrealSerializerFactory;
-import acmi.l2.clientmod.unreal.core.*;
-import acmi.l2.clientmod.unreal.core.Class;
-import acmi.l2.clientmod.unreal.core.FloatProperty;
-import acmi.l2.clientmod.unreal.core.Property;
 import acmi.l2.clientmod.unreal.properties.L2Property;
-import acmi.l2.clientmod.unreal.properties.PropertiesUtil;
 import javafx.beans.property.*;
-import javafx.beans.property.ObjectProperty;
 import javafx.scene.control.Control;
 import javafx.scene.control.Skin;
 
-import java.lang.Object;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.List;
 
 public class PropertiesEditor extends Control {
     private ObjectProperty<UnrealSerializerFactory> serializer = new SimpleObjectProperty<>();

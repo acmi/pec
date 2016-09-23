@@ -28,7 +28,10 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.MapChangeListener;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Skin;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 
 public abstract class TreeBasedPropertiesEditorSkin implements Skin<PropertiesEditor> {
@@ -40,7 +43,7 @@ public abstract class TreeBasedPropertiesEditorSkin implements Skin<PropertiesEd
         this.node = build();
     }
 
-    private Node build(){
+    private Node build() {
         TreeTableColumn<ObjectProperty<Object>, String> propertyCol = new TreeTableColumn<>("Property");
         propertyCol.setCellValueFactory(new TreeItemPropertyValueFactory<>("name"));
         TreeTableColumn<ObjectProperty<Object>, Object> valueCol = new TreeTableColumn<>("Value");

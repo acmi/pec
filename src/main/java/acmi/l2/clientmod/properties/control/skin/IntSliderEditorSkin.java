@@ -41,7 +41,7 @@ public class IntSliderEditorSkin implements Skin<IntSliderEditor> {
 
         @Override
         public Number fromString(String string) {
-           return Integer.parseInt(string);
+            return Integer.parseInt(string);
         }
     };
 
@@ -84,7 +84,7 @@ public class IntSliderEditorSkin implements Skin<IntSliderEditor> {
                 }}
         );
         pane.getRowConstraints().addAll(
-                new RowConstraints(){{
+                new RowConstraints() {{
                     setVgrow(Priority.ALWAYS);
                 }}
         );
