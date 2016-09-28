@@ -2,6 +2,7 @@ package acmi.l2.clientmod.properties.control;
 
 import acmi.l2.clientmod.unreal.core.Property;
 import javafx.beans.property.ObjectProperty;
+import javafx.scene.Node;
 import javafx.scene.control.TreeTableRow;
 
 /**
@@ -13,6 +14,7 @@ public class EditorContext {
 	private final TreeTableRow<ObjectProperty<Object>> treeTableRow;
 	private final ObjectProperty<Object> property;
 	private final Property template;
+	private Node editorNode;
 	
 	public EditorContext(PropertiesEditor propertiesEditor, TreeTableRow<ObjectProperty<Object>> treeTableRow, ObjectProperty<Object> property, Property template) {
 		this.propertiesEditor = propertiesEditor;
@@ -36,6 +38,12 @@ public class EditorContext {
 	public Property getTemplate() {
 		return template;
 	}
-	
-	
+
+	public Node getEditorNode() {
+		return editorNode;
+	}
+
+	public void setEditorNode(Node editorNode) {
+		this.editorNode = editorNode;
+	}
 }

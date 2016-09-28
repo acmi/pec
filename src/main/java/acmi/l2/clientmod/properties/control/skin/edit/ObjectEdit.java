@@ -90,6 +90,7 @@ public class ObjectEdit extends AbstractCustomizeEdit {
         });
         pane.add(cb, 0, 0);
         
+        context.setEditorNode(cb);
         for(int i = 0, paneCounter = 1; i < customElements.size(); i++) {
         	final Function<EditorContext, Node> function = customElements.get(i);
         	Node node = function.apply(context);
