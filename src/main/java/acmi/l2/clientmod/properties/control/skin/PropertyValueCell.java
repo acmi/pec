@@ -21,43 +21,54 @@
  */
 package acmi.l2.clientmod.properties.control.skin;
 
+import static acmi.l2.clientmod.properties.control.skin.PropertiesEditorDefaultSkin.fillArrayTree;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import acmi.l2.clientmod.io.UnrealPackage;
-import acmi.l2.clientmod.properties.control.IntSliderEditor;
+import acmi.l2.clientmod.properties.control.EditorContext;
+import acmi.l2.clientmod.properties.control.IEdit;
 import acmi.l2.clientmod.properties.control.PropertiesEditor;
+import acmi.l2.clientmod.properties.control.skin.edit.ArrayEdit;
+import acmi.l2.clientmod.properties.control.skin.edit.BoolEdit;
+import acmi.l2.clientmod.properties.control.skin.edit.ByteEdit;
+import acmi.l2.clientmod.properties.control.skin.edit.ClassEdit;
+import acmi.l2.clientmod.properties.control.skin.edit.FloatEdit;
+import acmi.l2.clientmod.properties.control.skin.edit.IntEdit;
+import acmi.l2.clientmod.properties.control.skin.edit.NameEdit;
+import acmi.l2.clientmod.properties.control.skin.edit.ObjectEdit;
+import acmi.l2.clientmod.properties.control.skin.edit.StrEdit;
+import acmi.l2.clientmod.properties.control.skin.edit.StructEdit;
 import acmi.l2.clientmod.unreal.UnrealSerializerFactory;
-import acmi.l2.clientmod.unreal.core.*;
+import acmi.l2.clientmod.unreal.core.ArrayProperty;
+import acmi.l2.clientmod.unreal.core.BoolProperty;
+import acmi.l2.clientmod.unreal.core.ByteProperty;
+import acmi.l2.clientmod.unreal.core.ClassProperty;
 import acmi.l2.clientmod.unreal.core.Enum;
+import acmi.l2.clientmod.unreal.core.FloatProperty;
+import acmi.l2.clientmod.unreal.core.IntProperty;
+import acmi.l2.clientmod.unreal.core.NameProperty;
+import acmi.l2.clientmod.unreal.core.Property;
+import acmi.l2.clientmod.unreal.core.StrProperty;
+import acmi.l2.clientmod.unreal.core.StructProperty;
 import acmi.l2.clientmod.unreal.properties.L2Property;
 import acmi.l2.clientmod.unreal.properties.PropertiesUtil;
-import acmi.util.AutoCompleteComboBox;
-import javafx.beans.InvalidationListener;
 import javafx.beans.property.ObjectProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Label;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableCell;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.paint.Color;
 
-import java.lang.Object;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import static acmi.l2.clientmod.properties.control.skin.PropertiesEditorDefaultSkin.fillArrayTree;
-
-class PropertyValueCell extends TreeTableCell<ObjectProperty<Object>, Object> {
-    private static final Logger log = Logger.getLogger(PropertyValueCell.class.getName());
-
+public class PropertyValueCell extends TreeTableCell<ObjectProperty<Object>, Object> {
     private final PropertiesEditor properties;
-
     {
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
     }
@@ -136,240 +147,33 @@ class PropertyValueCell extends TreeTableCell<ObjectProperty<Object>, Object> {
 
         if (template.arrayDimension > 1 && property.get() == null)
             return new Label("...");
-
+        
+        IEdit editor = null;
         if (template instanceof ByteProperty) {
-            ByteProperty byteProperty = (ByteProperty) template;
-            if (byteProperty.enumType != null) {
-                ComboBox<String> cb = new ComboBox<>();
-                cb.getItems().addAll(byteProperty.enumType.values);
-                cb.getSelectionModel().select((Integer) property.get());
-                cb.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
-                    property.setValue(newValue);
-                });
-                return cb;
-            } else {
-                IntSliderEditor editor = new IntSliderEditor(0, 255, (Integer) property.get());
-                editor.valueProperty().bindBidirectional((javafx.beans.property.Property) property);
-                return editor;
-            }
+        	editor = ByteEdit.getInstance();
         } else if (template instanceof IntProperty) {
-            TextField tf = new TextField(String.valueOf(property.get()));
-            tf.textProperty().addListener((observable, oldValue, newValue) -> {
-                try {
-                    property.setValue(Integer.valueOf(newValue));
-                } catch (NumberFormatException ignore) {
-                }
-            });
-            return tf;
+        	editor = IntEdit.getInstance();
         } else if (template instanceof BoolProperty) {
-            CheckBox cb = new CheckBox();
-            cb.setSelected((Boolean) property.getValue());
-            cb.selectedProperty().addListener((observable, oldValue, newValue) -> {
-                property.setValue(newValue);
-            });
-            return cb;
+        	editor = BoolEdit.getInstance();
         } else if (template instanceof FloatProperty) {
-            TextField tf = new TextField(String.valueOf(property.get()));
-            tf.textProperty().addListener((observable, oldValue, newValue) -> {
-                try {
-                    property.setValue(Float.parseFloat(newValue));
-                } catch (NumberFormatException ignore) {
-                }
-            });
-            return tf;
+        	editor = FloatEdit.getInstance();
         } else if (template instanceof ClassProperty) {
-            String type = ((ClassProperty) template).clazz.getFullName();
-            ObservableList<UnrealPackage.Entry> entries = FXCollections.observableArrayList();
-            Predicate<UnrealPackage.Entry> filter = entry -> entry.getFullClassName().equalsIgnoreCase("Core.Class") && getPropertiesEditor().getSerializer().isSubclass(type, entry.getObjectFullName());
-            entries.addAll(getPropertiesEditor().getUnrealPackage().getImportTable().parallelStream().filter(filter).collect(Collectors.toList()));
-            entries.addAll(getPropertiesEditor().getUnrealPackage().getExportTable().parallelStream().filter(filter).collect(Collectors.toList()));
-            Collections.sort(entries, (e1, e2) -> e1.getObjectFullName().compareToIgnoreCase(e2.getObjectFullName()));
-            if (entries.isEmpty()) {
-                int val = (Integer) property.get();
-                if (val != 0) {
-                    log.warning(() -> "No entries found for " + template);
-
-                    entries.add(getPropertiesEditor().getUnrealPackage().objectReference(val));
-                }
-            }
-            entries.add(0, new UnrealPackage.Entry(null, 0, 0, 0) {
-                @Override
-                public String getObjectInnerFullName() {
-                    return "None";
-                }
-
-                @Override
-                public String getFullClassName() {
-                    return type;
-                }
-
-                @Override
-                public int getObjectReference() {
-                    return 0;
-                }
-
-                @Override
-                public List getTable() {
-                    return null;
-                }
-            });
-            ComboBox<UnrealPackage.Entry> cb = new ComboBox<>(entries);
-            AutoCompleteComboBox.autoCompleteComboBox(cb, AutoCompleteComboBox.AutoCompleteMode.CONTAINING);
-            UnrealPackage.Entry v = cb.getItems()
-                    .parallelStream()
-                    .filter(entry -> entry.getObjectReference() == (Integer) property.get())
-                    .findAny()
-                    .orElseThrow(() -> new IllegalStateException("Entry not found: " + property.get() + "(" + getPropertiesEditor().getUnrealPackage().objectReference((Integer) property.get()) + ")"));
-            cb.getSelectionModel().select(v);
-            cb.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-                property.setValue(newValue == null ? 0 : newValue.getObjectReference());
-            });
-            return cb;
+        	editor = ClassEdit.getInstance();
         } else if (template instanceof acmi.l2.clientmod.unreal.core.ObjectProperty) {
-            String type = ((acmi.l2.clientmod.unreal.core.ObjectProperty) template).type.getFullName();
-            ObservableList<UnrealPackage.Entry> entries = FXCollections.observableArrayList();
-            Predicate<UnrealPackage.Entry> filter = entry -> getPropertiesEditor().getSerializer().isSubclass(type, entry.getFullClassName());
-            entries.addAll(getPropertiesEditor().getUnrealPackage().getImportTable().parallelStream().filter(filter).collect(Collectors.toList()));
-            entries.addAll(getPropertiesEditor().getUnrealPackage().getExportTable().parallelStream().filter(filter).collect(Collectors.toList()));
-            Collections.sort(entries, (e1, e2) -> e1.getObjectFullName().compareToIgnoreCase(e2.getObjectFullName()));
-            if (entries.isEmpty()) {
-                int val = (Integer) property.get();
-                if (val != 0) {
-                    log.warning(() -> "No entries found for " + template);
-
-                    entries.add(getPropertiesEditor().getUnrealPackage().objectReference(val));
-                }
-            }
-            entries.add(0, new UnrealPackage.Entry(null, 0, 0, 0) {
-                @Override
-                public String getObjectInnerFullName() {
-                    return "None";
-                }
-
-                @Override
-                public String getFullClassName() {
-                    return type;
-                }
-
-                @Override
-                public int getObjectReference() {
-                    return 0;
-                }
-
-                @Override
-                public List getTable() {
-                    return null;
-                }
-            });
-            ComboBox<UnrealPackage.Entry> cb = new ComboBox<>(entries);
-            AutoCompleteComboBox.autoCompleteComboBox(cb, AutoCompleteComboBox.AutoCompleteMode.CONTAINING);
-            UnrealPackage.Entry v = cb.getItems()
-                    .parallelStream()
-                    .filter(entry -> entry.getObjectReference() == (Integer) property.get())
-                    .findAny()
-                    .orElseThrow(() -> new IllegalStateException("Entry not found: " + property.get() + "(" + getPropertiesEditor().getUnrealPackage().objectReference((Integer) property.get()) + ")"));
-            cb.getSelectionModel().select(v);
-            cb.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-                property.setValue(newValue == null ? 0 : newValue.getObjectReference());
-            });
-            return cb;
+        	editor = ObjectEdit.getInstance();
         } else if (template instanceof NameProperty) {
-            UnrealPackage.NameEntry noneEntry = getPropertiesEditor().getUnrealPackage().getNameTable()
-                    .parallelStream()
-                    .filter(nameEntry -> nameEntry.getName().equalsIgnoreCase("None"))
-                    .findAny()
-                    .orElseThrow(() -> new IllegalStateException("Name entry not found"));
-            ObservableList<UnrealPackage.NameEntry> names = FXCollections.observableList(getPropertiesEditor().getUnrealPackage().getNameTable()
-                    .parallelStream()
-                    .sorted((e1, e2) -> e1 == noneEntry ? -1 : e2 == noneEntry ? 1 :
-                            e1.getName().compareToIgnoreCase(e2.getName()))
-                    .collect(Collectors.toList()));
-            ComboBox<UnrealPackage.NameEntry> cb = new ComboBox<>(names);
-            AutoCompleteComboBox.autoCompleteComboBox(cb, AutoCompleteComboBox.AutoCompleteMode.CONTAINING);
-            cb.getSelectionModel().select(names
-                    .parallelStream()
-                    .filter(nameEntry -> nameEntry.getIndex() == (Integer) property.get())
-                    .findAny()
-                    .orElseThrow(() -> new IllegalStateException("Name entry not found")));
-            cb.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-                if (newValue == null)
-                    newValue = noneEntry;
-                property.setValue(newValue.getIndex());
-            });
-            return cb;
+        	editor = NameEdit.getInstance();
         } else if (template instanceof ArrayProperty) {
-            TreeItem<ObjectProperty<Object>> item = getTreeTableRow().getTreeItem();
-            List<Object> list = (List<Object>) item.getValue().get();
-            Button empty = new Button("Empty");
-            empty.setMinWidth(Region.USE_PREF_SIZE);
-            empty.setOnAction(event -> {
-                list.clear();
-                item.getChildren().clear();
-            });
-            Button add = new Button("Add");
-            add.setMinWidth(Region.USE_PREF_SIZE);
-            add.setOnAction(event -> {
-                Object value = PropertiesUtil.defaultValue(((ArrayProperty) template).inner, null, getPropertiesEditor().getSerializer(), getPropertiesEditor().getUnrealPackage());
-                list.add(value);
-                item.getChildren().clear();
-                item.getChildren().addAll(fillArrayTree(null, (ArrayProperty) template, template.entry.getObjectName().getName(), list, getPropertiesEditor().getUnrealPackage(), getPropertiesEditor().getSerializer(), getPropertiesEditor().getEditableOnly(), getPropertiesEditor().getHideCategories()));
-            });
-            GridPane pane = new GridPane();
-            pane.add(new Label("..."), 0, 0);
-            pane.add(empty, 2, 0);
-            pane.add(add, 3, 0);
-            pane.getColumnConstraints().addAll(
-                    new ColumnConstraints() {{
-                        setMinWidth(0);
-                    }},
-                    new ColumnConstraints() {{
-                        setHgrow(Priority.ALWAYS);
-                    }},
-                    new ColumnConstraints(),
-                    new ColumnConstraints());
-            return pane;
+        	editor = ArrayEdit.getInstance();
         } else if (template instanceof StructProperty) {
-            List<L2Property> struct = (List<L2Property>) property.get();
-            if (((StructProperty) template).struct.getFullName().equalsIgnoreCase("Core.Object.Color")) {
-                java.util.function.Function<String, ObjectProperty<Object>> f = name -> getTreeTableRow()
-                        .getTreeItem()
-                        .getChildren()
-                        .stream()
-                        .filter(ti -> ti.getValue().getName().equalsIgnoreCase(name))
-                        .findAny()
-                        .map(TreeItem::getValue)
-                        .orElseThrow(() -> new IllegalThreadStateException("Color component not found: " + name));
-                ObjectProperty<Object> a = f.apply("A");
-                ObjectProperty<Object> r = f.apply("R");
-                ObjectProperty<Object> g = f.apply("G");
-                ObjectProperty<Object> b = f.apply("B");
-                Supplier<Color> colorSupplier = () -> Color.rgb((Integer) r.get(), (Integer) g.get(), (Integer) b.get(), ((Integer) a.get()) / 255.0);
-                ColorPicker cp = new ColorPicker(colorSupplier.get());
-                InvalidationListener il = observable -> cp.setValue(colorSupplier.get());
-                a.addListener(il);
-                r.addListener(il);
-                g.addListener(il);
-                b.addListener(il);
-                cp.valueProperty().addListener((observable, oldValue, newValue) -> {
-                    a.set((int) Math.round(255 * newValue.getOpacity()));
-                    r.set((int) Math.round(255 * newValue.getRed()));
-                    g.set((int) Math.round(255 * newValue.getGreen()));
-                    b.set((int) Math.round(255 * newValue.getBlue()));
-                });
-                return cp;
-            } else {
-                String text = struct == null ? "" : inlineStruct(struct, getPropertiesEditor().getUnrealPackage(), getPropertiesEditor().getSerializer()).toString();
-                return new Label(text);
-            }
+        	editor = StructEdit.getInstance();
         } else if (template instanceof StrProperty) {
-            TextField tf = new TextField(String.valueOf(property.get()));
-            tf.textProperty().addListener((observable, oldValue, newValue) -> {
-                property.setValue(newValue);
-            });
-            return tf;
+        	editor = StrEdit.getInstance();
         }
-
-        return null;
+        
+        return editor == null ? 
+        		null : 
+        		editor.create(new EditorContext(getPropertiesEditor(), getTreeTableRow(), property, template));
     }
 
     public static CharSequence inlineProperty(L2Property property, UnrealPackage up, UnrealSerializerFactory objectFactory, boolean valueOnly) {

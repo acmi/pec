@@ -1,0 +1,76 @@
+package acmi.l2.clientmod.properties.control.skin.edit;
+
+import java.util.List;
+import java.util.function.Supplier;
+
+import acmi.l2.clientmod.properties.control.EditorContext;
+import acmi.l2.clientmod.properties.control.IEdit;
+import acmi.l2.clientmod.properties.control.PropertiesEditor;
+import acmi.l2.clientmod.properties.control.skin.PropertyValueCell;
+import acmi.l2.clientmod.unreal.core.Property;
+import acmi.l2.clientmod.unreal.core.StructProperty;
+import acmi.l2.clientmod.unreal.properties.L2Property;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.ObjectProperty;
+import javafx.scene.control.ColorPicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableRow;
+import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
+
+/**
+ * @author PointerRage
+ *
+ */
+public class StructEdit implements IEdit {
+	private final static StructEdit instance = new StructEdit();
+	public static StructEdit getInstance() {
+		return instance;
+	}
+	
+	private StructEdit() {
+	}
+
+	@Override
+	public Region create(EditorContext context) {
+		final Property template = context.getTemplate();
+		final PropertiesEditor propertiesEditor = context.getPropertiesEditor();
+		final ObjectProperty<Object> property = context.getProperty();
+		final TreeTableRow<ObjectProperty<Object>> treeTableRow = context.getTreeTableRow();
+		
+		List<L2Property> struct = (List<L2Property>) property.get();
+        if (((StructProperty) template).struct.getFullName().equalsIgnoreCase("Core.Object.Color")) {
+            java.util.function.Function<String, ObjectProperty<Object>> f = name -> treeTableRow
+                    .getTreeItem()
+                    .getChildren()
+                    .stream()
+                    .filter(ti -> ti.getValue().getName().equalsIgnoreCase(name))
+                    .findAny()
+                    .map(TreeItem::getValue)
+                    .orElseThrow(() -> new IllegalThreadStateException("Color component not found: " + name));
+            ObjectProperty<Object> a = f.apply("A");
+            ObjectProperty<Object> r = f.apply("R");
+            ObjectProperty<Object> g = f.apply("G");
+            ObjectProperty<Object> b = f.apply("B");
+            Supplier<Color> colorSupplier = () -> Color.rgb((Integer) r.get(), (Integer) g.get(), (Integer) b.get(), ((Integer) a.get()) / 255.0);
+            ColorPicker cp = new ColorPicker(colorSupplier.get());
+            InvalidationListener il = observable -> cp.setValue(colorSupplier.get());
+            a.addListener(il);
+            r.addListener(il);
+            g.addListener(il);
+            b.addListener(il);
+            cp.valueProperty().addListener((observable, oldValue, newValue) -> {
+                a.set((int) Math.round(255 * newValue.getOpacity()));
+                r.set((int) Math.round(255 * newValue.getRed()));
+                g.set((int) Math.round(255 * newValue.getGreen()));
+                b.set((int) Math.round(255 * newValue.getBlue()));
+            });
+            return cp;
+        } else {
+            String text = struct == null ? "" : PropertyValueCell.inlineStruct(struct, propertiesEditor.getUnrealPackage(), propertiesEditor.getSerializer()).toString();
+            return new Label(text);
+        }
+	}
+
+}
