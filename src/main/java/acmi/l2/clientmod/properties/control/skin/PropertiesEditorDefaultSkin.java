@@ -21,6 +21,13 @@
  */
 package acmi.l2.clientmod.properties.control.skin;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import acmi.l2.clientmod.io.UnrealPackage;
 import acmi.l2.clientmod.properties.control.PropertiesEditor;
 import acmi.l2.clientmod.unreal.UnrealSerializerFactory;
@@ -33,13 +40,6 @@ import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TreeItem;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class PropertiesEditorDefaultSkin extends TreeBasedPropertiesEditorSkin {
     public PropertiesEditorDefaultSkin(PropertiesEditor editor) {
@@ -121,7 +121,7 @@ public class PropertiesEditorDefaultSkin extends TreeBasedPropertiesEditorSkin {
         }
     }
 
-    static List<TreeItem<ObjectProperty<Object>>> fillArrayTree(String structName, ArrayProperty property, String name, List<Object> list, UnrealPackage up, UnrealSerializerFactory serializer, boolean editableOnly, boolean hideCategories) {
+    public static List<TreeItem<ObjectProperty<Object>>> fillArrayTree(String structName, ArrayProperty property, String name, List<Object> list, UnrealPackage up, UnrealSerializerFactory serializer, boolean editableOnly, boolean hideCategories) {
         List<TreeItem<ObjectProperty<Object>>> children = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             int ind = i;
